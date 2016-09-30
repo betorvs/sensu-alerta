@@ -41,6 +41,7 @@ class Alerta < Sensu::Handler
 
     environment = @event['check']['environment'] || 'Production'
     subscribers = @event['check']['subscribers'] || []
+    playbook = "<br /><a href=\"#{@event['check']['playbook']}\" target=\"_blank\">Docs: #{@event['check']['playbook']}</a>" if @event['check']['playbook']
 
     payload = {
       "origin" => "sensu/#{hostname}",
@@ -59,7 +60,7 @@ class Alerta < Sensu::Handler
       "type" => "sensuAlert",
       "attributes" => {
         "subscribers" => "#{subscribers.join(",")}",
-        "thresholdInfo" => "#{@event['action']}: #{@event['check']['command']}"
+        "thresholdInfo" => "#{@event['action']}: #{@event['check']['command']} #{playbook}"
       },
       "rawData" => "#{@event.to_json}"
     }.to_json
