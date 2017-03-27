@@ -18,16 +18,25 @@ class Alerta < Sensu::Handler
     @event['action'].eql?('resolve') ? "RESOLVED" : "ALERT"
   end
 
+  def severity
+    unless @event['client']['severity'].nil?
+      severity = @event['client']['severity']
+    else
+      severity = "P4"
+    end
+    severity
+  end
+
   def status_to_severity
     case @event['check']['status']
       when 0
         "normal"
       when 1
-        "warning"
+        "warning - #{severity}"
       when 2
-        "critical"
+        "critical - #{severity}"
       else
-        "indeterminate"
+        "indeterminate - #{severity}"
     end
   end
 
@@ -39,9 +48,13 @@ class Alerta < Sensu::Handler
     puts url
     hostname = Socket.gethostname
 
-    environment = @event['check']['environment'] || 'Production'
+    if @event['client']['environment']
+      environment = @event['client']['environment']
+    else 
+      environment = @event['check']['environment'] || 'Production'
+    end
     subscribers = @event['check']['subscribers'] || []
-    playbook = "<br /><a href=\"#{@event['check']['playbook']}\" target=\"_blank\">Docs: #{@event['check']['playbook']}</a>" if @event['check']['playbook']
+    playbook = "<br /><a href=\"#{@event['check']['playbook']}\" target=\"_blank\">Confluence: #{@event['check']['playbook']}</a>" if @event['check']['playbook']
 
     payload = {
       "origin" => "sensu/#{hostname}",
@@ -60,7 +73,7 @@ class Alerta < Sensu::Handler
       "type" => "sensuAlert",
       "attributes" => {
         "subscribers" => "#{subscribers.join(",")}",
-        "thresholdInfo" => "#{@event['action']}: #{@event['check']['command']} #{playbook}"
+        "thresholdInfo" => "#{@event['action']}: #{@event['check']['command']}  #{playbook}"
       },
       "rawData" => "#{@event.to_json}"
     }.to_json
