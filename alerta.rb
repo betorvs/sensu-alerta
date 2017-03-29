@@ -54,7 +54,10 @@ class Alerta < Sensu::Handler
       environment = @event['check']['environment'] || 'Production'
     end
     subscribers = @event['check']['subscribers'] || []
-    playbook = "<br /><a href=\"#{@event['check']['playbook']}\" target=\"_blank\">Confluence: #{@event['check']['playbook']}</a>" if @event['check']['playbook']
+    playbook = "<br /> Confluence: <a href=\"#{@event['check']['playbook']}\" target=\"_blank\"> #{@event['check']['playbook']}</a>" if @event['check']['playbook']
+    docs = "<br /> Docs: <a href=\"#{@event['client']['docs']}\" target=\"_blank\"> #{@event['client']['docs']}</a>" if @event['client']['docs']
+    graphs = "<br /> Graphs: <a href=\"#{@event['client']['graphs']}\" target=\"_blank\"> #{@event['client']['graphs']}</a>" if @event['client']['graphs']
+    cluster = "cluster=#{@event['client']['cluster']}" if @event['client']['cluster'] 
 
     payload = {
       "origin" => "sensu/#{hostname}",
@@ -65,7 +68,7 @@ class Alerta < Sensu::Handler
       "environment" => environment,
       "service" => @event['client']['subscriptions'],
       "tags" => [
-        "handler=#{@event['check']['handler']}",
+        "handler=#{@event['check']['handlers']}","#{cluster}"
       ],
       "text" => "#{@event['check']['output']}",
       "summary" => "#{action_to_string} - #{short_name}",
@@ -73,7 +76,7 @@ class Alerta < Sensu::Handler
       "type" => "sensuAlert",
       "attributes" => {
         "subscribers" => "#{subscribers.join(",")}",
-        "thresholdInfo" => "#{@event['action']}: #{@event['check']['command']}  #{playbook}"
+        "thresholdInfo" => "#{@event['action']}: #{@event['check']['command']}  #{playbook} #{docs} #{graphs}"
       },
       "rawData" => "#{@event.to_json}"
     }.to_json
