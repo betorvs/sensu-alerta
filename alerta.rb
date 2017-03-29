@@ -36,7 +36,7 @@ class Alerta < Sensu::Handler
       when 2
         "critical - #{severity}"
       else
-        "indeterminate - #{severity}"
+        "indeterminate"
     end
   end
 
@@ -69,7 +69,7 @@ class Alerta < Sensu::Handler
       ],
       "text" => "#{@event['check']['output']}",
       "summary" => "#{action_to_string} - #{short_name}",
-      "value" => "",
+      "value" => "#{severity}",
       "type" => "sensuAlert",
       "attributes" => {
         "subscribers" => "#{subscribers.join(",")}",
